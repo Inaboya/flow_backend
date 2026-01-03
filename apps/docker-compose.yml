@@ -1,0 +1,44 @@
+services:
+  # Database Service
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: flow-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: flow_db
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flow_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # NestJS API
+  nest-api:
+    build:
+      context: .
+      dockerfile: apps/nest-api/Dockerfile
+    container_name: nest-api
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:12345@flow_db:5433/flow_db
+      PYTHON_ENGINE_URL: http://python-engine:8000/graphql
+    ports:
+      - "3000:3000"
+
+  # Python Heuristic Engine
+  python-engine:
+    build:
+      context: .
+      dockerfile: apps/python-engine/Dockerfile
+    container_name: python-engine
+    depends_on:
+      - postgres-db
+    environment:
+      DATABASE_URL: postgres://postgres:password@postgres-db:5432/flow_db
+    ports:
+      - "8000:8000"
