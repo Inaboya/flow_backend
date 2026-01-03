@@ -1,0 +1,13 @@
+# Web & GraphQL
+fastapi
+uvicorn
+strawberry-graphql[fastapi]
+
+# Database & ORM (Senior Challenge Requirements)
+sqlalchemy>=2.0.0
+alembic
+psycopg2-binary
+
+# Tools
+python-dotenv
+pydantic>=2.0.0
